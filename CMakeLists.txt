@@ -23,6 +23,7 @@ set(BML_SOURCES
     src/core/context.c
     src/core/ast.c
     src/core/ast_print.c
+    src/core/ast_validate.c
 )
 
 
