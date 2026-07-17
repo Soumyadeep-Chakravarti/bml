@@ -22,8 +22,12 @@ set(BML_SOURCES
     src/core/arena.c
     src/core/context.c
     src/core/ast.c
+    src/core/ast_builder.c
     src/core/ast_print.c
     src/core/ast_validate.c
+    src/core/visitor.c
+    src/core/simplify/simplify.c
+    src/core/simplify/rules/arithmetic.c
 )
 
 
@@ -40,6 +44,12 @@ target_include_directories(
     bml
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(
+    bml
+    PUBLIC
+    m
 )
 
 

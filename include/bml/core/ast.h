@@ -76,23 +76,6 @@ struct BML_Expr {
 };
 
 /*==========================================================
- * Constructors
- *==========================================================*/
-
-BML_Expr *bml_number(BML_Context *ctx, double value);
-
-BML_Expr *bml_variable(BML_Context *ctx, const char *name);
-
-BML_Expr *bml_constant(BML_Context *ctx, const char *name);
-
-BML_Expr *bml_unary(BML_Context *ctx, BML_NodeType type, BML_Expr *child);
-
-BML_Expr *bml_binary(BML_Context *ctx, BML_NodeType type, BML_Expr *left,
-                     BML_Expr *right);
-
-BML_Expr *bml_node(BML_Context *ctx, BML_NodeType type, size_t child_count);
-
-/*==========================================================
  * Destruction
  *==========================================================*/
 
@@ -103,6 +86,15 @@ void bml_expr_destroy(BML_Expr *expr);
  *==========================================================*/
 
 void bml_print_ast(const BML_Expr *expr);
+
+/*==========================================================
+ * Comparison
+ *==========================================================*/
+
+/* Structural equality: returns 1 if both expression trees are
+ * identical in structure and values. Does not canonicalize
+ * (so x+y != y+x). Use for rewrite rule matching only. */
+int bml_expr_equal(const BML_Expr *a, const BML_Expr *b);
 
 #ifdef __cplusplus
 }

@@ -1,12 +1,14 @@
 # Buna's Math Library (BML)
 
-> **A symbolic and numerical mathematics framework written in C.**
+> **An experimental symbolic mathematics and optimization engine written in C.**
 
-Buna's Math Library (BML) is an experimental open-source project that aims to build a complete mathematics framework from scratch using modern C and minimal external dependencies.
+Buna's Math Library (BML) is an experimental symbolic mathematics and optimization engine written in C. Rather than treating mathematics as numerical computation alone, BML represents expressions as structured syntax trees that can be analyzed, transformed, simplified, optimized, and evaluated.
 
-Unlike traditional math libraries that focus solely on numerical computation, BML is designed to understand mathematics symbolically. Its long-term vision is to provide a reusable library capable of parsing, manipulating, transforming, solving, and evaluating mathematical expressions across a wide range of mathematical disciplines.
+Most symbolic transformations in BML are intended to be implemented through pattern matching and rewrite rules, allowing mathematically equivalent expressions to be transformed into forms better suited for a given objective.
 
-BML is designed to serve as a common mathematical foundation for future projects, including physics engines, graphics applications, robotics software, scientific simulations, optimization tools, and other computational systems.
+BML is designed to serve as a general-purpose mathematical engine for applications such as physics engines, graphics, simulations, scientific computing, optimization, robotics, and compiler research.
+
+BML is inspired by symbolic mathematics systems such as Maple, Mathematica, Maxima, and SymPy, but is developed as an experimental and educational project focused on understanding how such systems can be built from first principles in C.
 
 > **Status:** Early experimental design. APIs, architecture, and internal representations are expected to evolve.
 
@@ -40,24 +42,54 @@ BML is designed to serve as a common mathematical foundation for future projects
 - Units & Dimensional Analysis
 - Equation Solving
 - Expression Simplification
-- Expansion & Factorization
-- Code Generation
+- Expression Expansion
+- Expression Factorization
+- Expression Normalization
+- Symbolic Optimization
+- Code Optimization
+- Automatic Code Generation
+- Pretty-printing
 - LaTeX Import / Export
 
 ---
 
 ## Design Principles
 
-BML is guided by a few simple principles.
+BML is built around a few core principles:
 
-- Minimal external dependencies
-- Portable ISO C
-- Modular architecture
-- Symbolic-first design
-- Reusable across projects
-- Extensible parser architecture
-- Human-readable APIs
-- Correctness before optimization
+- Mathematics is represented symbolically before it is evaluated.
+- Expressions are immutable trees that can be transformed safely.
+- Mathematical equivalence is more important than textual equality.
+- Optimization should preserve semantics.
+- Algorithms should be modular and extensible.
+- New mathematical domains should integrate through the same AST and rewrite framework.
+- Minimal external dependencies.
+- Portable ISO C.
+- Correctness before optimization.
+
+---
+
+## Simplification vs. Optimization
+
+BML distinguishes between simplification and optimization, which serve different goals.
+
+### Simplification
+
+Reduces expressions to a more canonical or concise form.
+
+- `x + 0 → x`
+- `sin²(x) + cos²(x) → 1`
+- `2*x + 3*x → 5*x`
+
+### Optimization
+
+Transforms expressions to improve computational properties while preserving semantics.
+
+- Common subexpression elimination
+- Factorization to reduce FLOPs
+- Algorithm selection for numerical stability
+- Operation count reduction
+- Vectorization-friendly reordering
 
 ---
 
@@ -83,12 +115,63 @@ Instead, it should become an Abstract Syntax Tree (AST), allowing operations suc
 - Expansion
 - Factorization
 - Variable substitution
+- Domain analysis
+- Expression normalization
+- Expression comparison
 - Equation solving
 - Numerical evaluation
+- Mathematical optimization
 - Code generation
 - Mathematical transformations
 
 All of these operations work from the same internal representation.
+
+One of BML's primary goals is to transform mathematically equivalent expressions into forms that are better suited for a specific objective. For example,
+
+```text
+x^2 + 2xy + y^2
+```
+
+may be transformed into
+
+```text
+(x + y)^2
+```
+
+because it requires fewer operations. Likewise,
+
+```text
+sin(x)^2 + cos(x)^2
+```
+
+may be simplified to
+
+```text
+1
+```
+
+and repeated subexpressions may be identified and computed only once to reduce computational cost.
+
+The "best" representation of an expression depends on the objective. A symbolic optimizer may choose different forms depending on whether the target is numerical stability, computational efficiency, vectorization, GPU execution, code generation, or human readability.
+
+BML therefore aims to become not only a mathematics library, but also a symbolic optimization engine capable of applying mathematical identities, transformations, rewrite rules, and algorithmic improvements to produce equivalent—but more useful—expressions.
+
+---
+
+## Long-Term Vision
+
+The ultimate goal of BML is to become a general-purpose symbolic mathematics engine capable of:
+
+- Understanding mathematical notation
+- Reasoning about expressions symbolically
+- Performing symbolic computation across mathematical disciplines
+- Optimizing expressions for different objectives
+- Generating efficient executable code
+- Serving as the mathematical foundation for scientific software, simulations, graphics, robotics, and physics engines
+
+The project philosophy is simple:
+
+> **If a mathematical expression can be represented, BML should eventually be able to understand it, manipulate it, optimize it, and compute it.**
 
 ---
 
@@ -259,7 +342,6 @@ int main(void)
 
 At least during the early stages of development, BML is **not** intended to:
 
-- Replace mature Computer Algebra Systems such as SymPy or Mathematica.
 - Implement the entirety of the TeX/LaTeX language.
 - Maintain ABI compatibility between experimental releases.
 - Prioritize maximum performance over correctness.
