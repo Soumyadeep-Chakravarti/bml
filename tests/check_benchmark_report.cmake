@@ -1,0 +1,11 @@
+file(MAKE_DIRECTORY "${WORK}")
+execute_process(COMMAND "${BENCH}" --csv "${WORK}/results.csv" --markdown "${WORK}/report.md"
+                RESULT_VARIABLE result)
+if (NOT result EQUAL 0)
+  message(FATAL_ERROR "bml_bench failed: ${result}")
+endif()
+file(READ "${WORK}/results.csv" csv)
+file(READ "${WORK}/report.md" report)
+if (NOT csv MATCHES "group,input-nodes" OR NOT report MATCHES "BML benchmark report")
+  message(FATAL_ERROR "benchmark report output is incomplete")
+endif()
