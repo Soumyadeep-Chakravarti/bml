@@ -1,0 +1,32 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y clang-format clang-tidy cppcheck ninja-build
+      - name: Configure
+        env:
+          CC: ${{ matrix.compiler == 'gcc' && 'gcc' || 'clang' }}
+        run: cmake -S . -B build/ci -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      - run: cmake --build build/ci --parallel
+      - run: ctest --test-dir build/ci --output-on-failure
+      - run: cmake --build build/ci --target format-check
+      - if: matrix.compiler == 'clang'
+        run: cmake --build build/ci --target clang-tidy
+      - run: cmake --build build/ci --target cppcheck
+      - name: Install and consume package
+        run: cmake --install build/ci --prefix "$RUNNER_TEMP/bml" && cmake -S tests/installed_consumer -B build/consumer -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/bml" && cmake --build build/consumer && ./build/consumer/bml_consumer
+  sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S . -B build/sanitize-ci -G Ninja -DCMAKE_C_COMPILER=clang -DBML_ENABLE_SANITIZERS=ON
+      - run: cmake --build build/sanitize-ci --parallel
+      - run: ctest --test-dir build/sanitize-ci --output-on-failure
