@@ -1,16 +1,21 @@
 # Buna's Math Library (BML)
 
-> **An experimental symbolic mathematics and optimization engine written in C.**
+> **An experimental C11 symbolic optimizer for scalar real-valued expressions.**
 
-Buna's Math Library (BML) is an experimental symbolic mathematics and optimization engine written in C. Rather than treating mathematics as numerical computation alone, BML represents expressions as structured syntax trees that can be analyzed, transformed, simplified, optimized, and evaluated.
+Buna's Math Library (BML) is an experimental symbolic expression engine written
+in C. It represents scalar arithmetic as syntax trees that can be validated,
+transformed, evaluated, and eventually emitted as efficient C code.
 
 Most symbolic transformations in BML are intended to be implemented through pattern matching and rewrite rules, allowing mathematically equivalent expressions to be transformed into forms better suited for a given objective.
 
-BML is designed to serve as a general-purpose mathematical engine for applications such as physics engines, graphics, simulations, scientific computing, optimization, robotics, and compiler research.
+BML is designed as an embeddable systems and compiler research project, not as
+a replacement for general-purpose computer algebra systems.
 
 BML is inspired by symbolic mathematics systems such as Maple, Mathematica, Maxima, and SymPy, but is developed as an experimental and educational project focused on understanding how such systems can be built from first principles in C.
 
-> **Status:** Early experimental design. APIs, architecture, and internal representations are expected to evolve.
+> **Status:** BML 0.4 adds definedness-aware scalar rewrites, reusable numerical
+> verification, a benchmark corpus, and an experimental bounded equality
+> exploration backend. The local optimizer remains the default.
 
 ---
 
@@ -18,38 +23,56 @@ BML is inspired by symbolic mathematics systems such as Maple, Mathematica, Maxi
 
 ### Current
 
-- 🚧 Project architecture
-- 🚧 AST design
-- 🚧 Parser design
-- 🚧 Documentation
-- 🚧 Build system
+- Context-owned AST allocation, structural equality, validation, printing, and visitors
+- Assumptions attached to symbols (`real`, `finite`, `positive`, `nonnegative`, `integer`, `nonzero`) with safe derived facts
+- Bounded fixed-point simplification with stable rule IDs, categories, priorities, and explicit assumption requirements
+- Canonical associative `+`/`*`: flattening, deterministic sorting, numeric coefficient/factor folding, and repeated-factor powers
+- Infix `+ - * / ^`, unary minus, parentheses, variables, literals, and one-argument `sin`, `cos`, `exp`, `log`
+- Evaluation from bindings, substitution, differentiation, canonical infix formatting, structural hash and operation-cost analysis
+- Readability, operation-count, and C-runtime optimization targets with public candidate costs/results
+- Public definedness classification plus deterministic equivalence and finite-difference derivative verification
+- Experimental bounded `egraph` engine with a recorded binomial-square proof step; it is opt-in and intentionally not a general e-graph
+- A structural benchmark corpus and `bml_bench` executable; it measures optimizer work, not compiled-runtime timings
+- A separate lowered C layer that introduces CSE temporaries and lowers small integer powers before C printing
+- CTest, sanitizers, formatting, clang-tidy, and Cppcheck workflows
 
-### Planned
+### Target Workflow
 
-- Symbolic Algebra
-- Numerical Mathematics
-- Calculus
-- Linear Algebra
-- Geometry
-- Trigonometry
-- Complex Numbers
-- Statistics
-- Probability
-- Optimization
-- Differential Equations
-- Coordinate Transformations
-- Physics Mathematics
-- Units & Dimensional Analysis
-- Equation Solving
-- Expression Simplification
-- Expression Expansion
-- Expression Factorization
-- Expression Normalization
-- Symbolic Optimization
-- Code Optimization
-- Automatic Code Generation
-- Pretty-printing
-- LaTeX Import / Export
+```text
+infix input or C API -> AST -> validation -> transformation -> evaluation or C output
+```
+
+## CLI
+
+```sh
+./build/dev/bml_cli simplify '(x + 0) * 1'
+./build/dev/bml_cli eval 'sin(x) + y' x=0 y=2
+./build/dev/bml_cli diff 'x^3 + cos(x)' x
+./build/dev/bml_cli emit-c 'x^2 + sin(x)'
+./build/dev/bml_cli emit-c --optimize '(x + y) * (x + y)'
+./build/dev/bml_cli simplify 'x/x' --assume x:nonzero
+./build/dev/bml_cli optimize 'x^3' --target=readability
+./build/dev/bml_cli optimize '(x + y)^3 + sin(x + y)' --target=c --explain
+./build/dev/bml_cli optimize '(x+y)^2 - 2*x*y' --engine=egraph --target=readability --explain
+./build/dev/bml_cli verify '(x+y)^2 - 2*x*y' 'x^2+y^2'
+./build/dev/bml_cli verify-diff 'sin(x) + x^3' x
+./build/dev/bml_cli benchmark '(x+y)^4' --engine=local
+./build/dev/bml_bench
+./build/dev/bml_cli explain '(2 + 3) * 1'
+```
+
+`explain` reports only rewrites that actually fired. Domain-sensitive identities
+such as `x - x` and `0 / x` are deliberately retained. `x / x` and `x ^ 0`
+require a `nonzero` assumption (numeric nonzero literals are recognized).
+`optimize --explain` reports the canonical form, detected CSE count, each candidate's
+node/C-operation cost and score, the selected form, and generated C for target `c`.
+Canonicalization deliberately does not distribute, factor, cancel general terms,
+or apply trigonometric identities. Optimized C emission targets scalar `double`;
+its CSE is intentionally local and does not model floating-point reassociation.
+
+The focused endgame is an explainable symbolic optimizer for scalar real
+expressions. See [the roadmap](docs/roadmap.md) and
+[target architecture](docs/architecture.md).
 
 ---
 
@@ -158,111 +181,46 @@ BML therefore aims to become not only a mathematics library, but also a symbolic
 
 ---
 
-## Long-Term Vision
+## Showcase Endgame
 
-The ultimate goal of BML is to become a general-purpose symbolic mathematics engine capable of:
+The intended end-to-end demonstration is:
 
-- Understanding mathematical notation
-- Reasoning about expressions symbolically
-- Performing symbolic computation across mathematical disciplines
-- Optimizing expressions for different objectives
-- Generating efficient executable code
-- Serving as the mathematical foundation for scientific software, simulations, graphics, robotics, and physics engines
+```text
+input:        (x + y)^2 + sin(x)^2 + cos(x)^2
+simplified:   (x + y)^2 + 1
+derivative x: 2 * (x + y)
+generated C:  return (x + y) * (x + y) + 1.0;
+```
 
-The project philosophy is simple:
-
-> **If a mathematical expression can be represented, BML should eventually be able to understand it, manipulate it, optimize it, and compute it.**
+Each transformation should be explainable: BML should record the applied rule,
+the expression before and after it, and any required domain assumption.
 
 ---
 
 ## Expression Input
 
-BML aims to use **LaTeX mathematics as its primary input language**, allowing equations to be copied directly from lecture notes, textbooks, scientific papers, and documentation.
+The first textual frontend will be a conventional infix parser. It is smaller,
+easier to test, and shares one semantic model with the C API.
 
 Example:
 
-```latex
-\frac{x^2+1}{\sqrt{x}}
+```text
+(x^2 + 1) / sqrt(x)
 ```
 
-instead of requiring a custom mathematical syntax.
-
-Initially, BML will support a carefully selected mathematical subset of LaTeX. Support will gradually expand over time.
-
-Advantages include:
-
-- Copy equations directly from notes.
-- Reuse mathematical notation already familiar to scientists and engineers.
-- Produce publication-quality LaTeX output.
-- Share a common language with documentation and research papers.
+LaTeX import and export remain deferred frontends for a constrained subset;
+they must produce the same AST and must not introduce separate semantics. See
+[docs/parser.md](docs/parser.md).
 
 ---
 
-## Planned Architecture
+## Documentation
 
-```mermaid
-graph TD
-
-    Input([LaTeX Input])
-
-    Lexer[Lexer]
-    Parser[Parser]
-
-    AST["Abstract Syntax Tree"]
-
-    Validator[Validator]
-    Simplifier[Simplifier]
-    Symbolic[Symbolic Engine]
-    Numerical[Numerical Engine]
-    Solver[Equation Solver]
-    Optimizer[Optimizer]
-    CodeGen[Code Generator]
-    Printer[Pretty Printer]
-
-    Input --> Lexer
-    Lexer --> Parser
-    Parser --> AST
-
-    AST --> Validator
-    AST --> Simplifier
-    AST --> Symbolic
-    AST --> Numerical
-    AST --> Solver
-    AST --> Optimizer
-    AST --> CodeGen
-    AST --> Printer
-```
-
-The AST acts as the heart of the library. Every subsystem operates on the same internal mathematical representation.
-
----
-
-## Planned Modules
-
-- Core Infrastructure
-- Expression Trees (AST)
-- Memory Management
-- Lexer
-- Parser
-- LaTeX Frontend
-- Symbolic Algebra
-- Calculus
-- Numerical Analysis
-- Linear Algebra
-- Matrix Mathematics
-- Vector Mathematics
-- Geometry
-- Complex Numbers
-- Differential Equations
-- Probability
-- Statistics
-- Optimization
-- Physics Utilities
-- Coordinate Systems
-- Units & Dimensional Analysis
-- Random Number Generation
-- Code Generation
-- Pretty Printer
+- [Target architecture](docs/architecture.md)
+- [Expression model](docs/ast.md)
+- [Parser plan](docs/parser.md)
+- [Scalar semantics and verification](docs/semantics.md)
+- [Roadmap](docs/roadmap.md)
 
 ---
 
@@ -295,46 +253,44 @@ int main(void)
 
 ---
 
+## Development
+
+The repository provides a Nix development shell with Clang, CMake, Ninja,
+clang-format, clang-tidy, Cppcheck, GDB, and Valgrind.
+
+```sh
+direnv allow                 # or: nix develop ./.nix
+cmake --preset dev
+cmake --build --preset dev
+ctest --preset dev
+./build/dev/bml_example
+```
+
+The `dev` preset creates a debug build and `compile_commands.json` for editor
+integration. Use `cmake --preset release` and `cmake --build --preset release`
+for an optimized build. Formatting and analysis configuration is provided in
+`.clang-format` and `.clang-tidy`.
+
+Run the project quality tools from a configured build directory:
+
+```sh
+cmake --build build/dev --target format-check
+cmake --build build/dev --target clang-tidy
+cmake --build build/dev --target cppcheck
+cmake --preset sanitize
+cmake --build --preset sanitize
+ctest --preset sanitize
+```
+
+`format` applies the repository formatting convention. The `sanitize` preset
+enables AddressSanitizer and UndefinedBehaviorSanitizer for the core test suite.
+
+---
+
 ## Roadmap
 
-### Phase 1 — Core Infrastructure
-
-- [ ] Arena Allocator
-- [ ] AST
-- [ ] Error System
-- [ ] Context Management
-- [ ] Basic Testing Framework
-
-### Phase 2 — Parsing
-
-- [ ] Lexer
-- [ ] Tokenizer
-- [ ] LaTeX Parser
-- [ ] AST Builder
-- [ ] Pretty Printer
-
-### Phase 3 — Symbolic Mathematics
-
-- [ ] Expression Evaluation
-- [ ] Simplification
-- [ ] Expansion
-- [ ] Factorization
-- [ ] Substitution
-
-### Phase 4 — Calculus
-
-- [ ] Differentiation
-- [ ] Integration
-- [ ] Limits
-- [ ] Taylor Series
-
-### Phase 5 — Scientific Mathematics
-
-- [ ] Linear Algebra
-- [ ] Geometry
-- [ ] Numerical Methods
-- [ ] Optimization
-- [ ] Differential Equations
+The maintained implementation plan, including explicit deferred work, is in
+[docs/roadmap.md](docs/roadmap.md).
 
 ---
 
@@ -343,6 +299,7 @@ int main(void)
 At least during the early stages of development, BML is **not** intended to:
 
 - Implement the entirety of the TeX/LaTeX language.
+- Become a broad mathematics platform before the scalar symbolic core is complete.
 - Maintain ABI compatibility between experimental releases.
 - Prioritize maximum performance over correctness.
 

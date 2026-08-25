@@ -1,48 +1,26 @@
 # BML Architecture
 
-This document reflects the current architectural design of Buna's Math Library. It will evolve as subsystems are implemented.
+BML is being developed as an embeddable C11 symbolic optimizer for scalar,
+real-valued expressions. The goal is not to recreate a general-purpose computer
+algebra system. Its core workflow is to parse or build an expression, validate
+it, transform it with explainable rules, and evaluate or emit efficient C code.
 
-## Current Design
+The detailed target architecture is maintained in [docs/architecture.md](docs/architecture.md).
+The staged delivery plan is in [docs/roadmap.md](docs/roadmap.md).
 
-```mermaid
-graph TD
+## Current Implementation
 
-    Input([LaTeX Input])
+- Context-owned arena allocation with stable allocation addresses.
+- Immutable-by-convention AST nodes for numbers, variables, constants, unary
+  negation, and binary arithmetic.
+- Structural equality, validation, AST printing, and depth-first visitors.
+- Bottom-up arithmetic simplification through explicit rewrite rules.
+- CTest coverage, sanitizers, formatting, clang-tidy, and Cppcheck targets.
 
-    Lexer[Lexer]
-    Parser[Parser]
+## Design Principles
 
-    AST["Abstract Syntax Tree"]
-
-    Validator[Validator]
-    Printer[Printer]
-    Visitors[Visitors]
-
-    Input --> Lexer
-    Lexer --> Parser
-    Parser --> AST
-
-    AST --> Validator
-    AST --> Printer
-    AST --> Visitors
-```
-
-### Components
-
-- **LaTeX Input** — Primary input format. Users write mathematical expressions in LaTeX notation.
-- **Lexer** — Tokenizes LaTeX input into a stream of tokens. *(Planned)*
-- **Parser** — Converts token stream into an AST. *(Planned)*
-- **AST** — Core data structure. All subsystems operate on this shared representation.
-- **Validator** — Checks expressions for structural and mathematical validity.
-- **Printer** — Produces human-readable output (text, LaTeX). *(Planned)*
-- **Visitors** — Traversal framework for operating on AST nodes. *(Planned)*
-
-### Principles
-
-- The AST is the single source of truth. Every subsystem reads from and writes to the same tree structure.
-- Nodes are immutable once created. Transformations produce new trees rather than modifying existing ones.
-- Operations are expressed as visitors or rewrite rules that pattern-match against AST structures.
-
----
-
-This document will be updated as new subsystems (rewrite engine, simplifier, optimizer, code generator, etc.) are implemented.
+- The AST is the single expression representation shared by every subsystem.
+- Transformations preserve semantics under stated domain assumptions.
+- Rewrite rules should be explicit, ordered, testable, and explainable.
+- The public API is portable C11 with minimal dependencies.
+- Correctness and debuggability take priority over optimization.
