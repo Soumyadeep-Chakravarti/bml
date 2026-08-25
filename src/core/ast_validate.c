@@ -15,6 +15,7 @@ static BML_ValidationError validate_node(const BML_Expr *expr) {
     break;
 
   case BML_NODE_NEGATE:
+  case BML_NODE_FUNCTION:
 
     if (expr->child_count != 1)
       return BML_INVALID_CHILD_COUNT;
@@ -37,6 +38,9 @@ static BML_ValidationError validate_node(const BML_Expr *expr) {
   }
 
   for (size_t i = 0; i < expr->child_count; i++) {
+    if (!expr->children || !expr->children[i])
+      return BML_INVALID_NULL_NODE;
+
     BML_ValidationError result = validate_node(expr->children[i]);
 
     if (result != BML_VALID)

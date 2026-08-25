@@ -5,25 +5,42 @@
 
 #define BML_DEFAULT_ARENA_SIZE 4096
 
-struct BML_Arena {
+typedef struct BML_ArenaBlock {
   unsigned char *memory;
-
   size_t capacity;
   size_t offset;
+  struct BML_ArenaBlock *next;
+} BML_ArenaBlock;
+
+struct BML_Arena {
+  BML_ArenaBlock *blocks;
 };
 
+static BML_ArenaBlock *bml_arena_block_create(size_t capacity) {
+  BML_ArenaBlock *block = malloc(sizeof(*block));
+  if (!block)
+    return NULL;
+
+  block->memory = malloc(capacity);
+  if (!block->memory) {
+    free(block);
+    return NULL;
+  }
+
+  block->capacity = capacity;
+  block->offset = 0;
+  block->next = NULL;
+  return block;
+}
+
 BML_Arena *bml_arena_create(void) {
-  BML_Arena *arena = malloc(sizeof(BML_Arena));
+  BML_Arena *arena = malloc(sizeof(*arena));
 
   if (!arena)
     return NULL;
 
-  arena->capacity = BML_DEFAULT_ARENA_SIZE;
-  arena->offset = 0;
-
-  arena->memory = malloc(arena->capacity);
-
-  if (!arena->memory) {
+  arena->blocks = bml_arena_block_create(BML_DEFAULT_ARENA_SIZE);
+  if (!arena->blocks) {
     free(arena);
     return NULL;
   }
@@ -35,24 +52,30 @@ void *bml_arena_alloc(BML_Arena *arena, size_t size) {
   if (!arena || size == 0)
     return NULL;
 
-  if (arena->offset + size > arena->capacity) {
-    size_t new_capacity = arena->capacity * 2;
+  BML_ArenaBlock *block = arena->blocks;
+  size_t alignment = _Alignof(max_align_t);
+  size_t padding = (alignment - (block->offset % alignment)) % alignment;
 
-    while (new_capacity < arena->offset + size)
+  if (padding > block->capacity - block->offset ||
+      size > block->capacity - block->offset - padding) {
+    size_t new_capacity = block->capacity * 2;
+
+    while (new_capacity < size)
       new_capacity *= 2;
 
-    unsigned char *new_memory = realloc(arena->memory, new_capacity);
-
-    if (!new_memory)
+    BML_ArenaBlock *new_block = bml_arena_block_create(new_capacity);
+    if (!new_block)
       return NULL;
 
-    arena->memory = new_memory;
-    arena->capacity = new_capacity;
+    new_block->next = block;
+    arena->blocks = new_block;
+    block = new_block;
+    padding = 0;
   }
 
-  void *ptr = arena->memory + arena->offset;
+  void *ptr = block->memory + block->offset + padding;
 
-  arena->offset += size;
+  block->offset += padding + size;
 
   memset(ptr, 0, size);
 
@@ -63,13 +86,21 @@ void bml_arena_reset(BML_Arena *arena) {
   if (!arena)
     return;
 
-  arena->offset = 0;
+  for (BML_ArenaBlock *block = arena->blocks; block; block = block->next)
+    block->offset = 0;
 }
 
 void bml_arena_destroy(BML_Arena *arena) {
   if (!arena)
     return;
 
-  free(arena->memory);
+  BML_ArenaBlock *block = arena->blocks;
+  while (block) {
+    BML_ArenaBlock *next = block->next;
+    free(block->memory);
+    free(block);
+    block = next;
+  }
+
   free(arena);
 }

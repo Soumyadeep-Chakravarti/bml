@@ -18,6 +18,9 @@ BML_Expr *bml_number(BML_Context *ctx, double value) {
 }
 
 BML_Expr *bml_variable(BML_Context *ctx, const char *name) {
+  if (!name)
+    return NULL;
+
   BML_Expr *expr = bml_node(ctx, BML_NODE_VARIABLE, 0);
 
   if (!expr)
@@ -29,6 +32,9 @@ BML_Expr *bml_variable(BML_Context *ctx, const char *name) {
 }
 
 BML_Expr *bml_constant(BML_Context *ctx, const char *name) {
+  if (!name)
+    return NULL;
+
   BML_Expr *expr = bml_node(ctx, BML_NODE_CONSTANT, 0);
 
   if (!expr)
@@ -65,4 +71,17 @@ BML_Expr *bml_divide(BML_Context *ctx, BML_Expr *left, BML_Expr *right) {
 
 BML_Expr *bml_power(BML_Context *ctx, BML_Expr *base, BML_Expr *exponent) {
   return bml_binary(ctx, BML_NODE_POWER, base, exponent);
+}
+
+BML_Expr *bml_function(BML_Context *ctx, const char *name, BML_Expr *argument) {
+  if (!name)
+    return NULL;
+
+  BML_Expr *expr = bml_unary(ctx, BML_NODE_FUNCTION, argument);
+
+  if (!expr)
+    return NULL;
+
+  expr->value.identifier = name;
+  return expr;
 }

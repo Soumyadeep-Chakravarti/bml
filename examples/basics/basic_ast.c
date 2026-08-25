@@ -27,48 +27,31 @@ int main(void) {
   demo(ctx, "x + x", bml_add(ctx, bml_variable(ctx, "x"), bml_variable(ctx, "x")));
 
   /* subtraction */
-  demo(ctx, "x - 0",
-       bml_subtract(ctx, bml_variable(ctx, "x"), bml_number(ctx, 0)));
-  demo(ctx, "0 - x",
-       bml_subtract(ctx, bml_number(ctx, 0), bml_variable(ctx, "x")));
-  demo(ctx, "5 - 3",
-       bml_subtract(ctx, bml_number(ctx, 5), bml_number(ctx, 3)));
-  demo(ctx, "x - x",
-       bml_subtract(ctx, bml_variable(ctx, "x"), bml_variable(ctx, "x")));
+  demo(ctx, "x - 0", bml_subtract(ctx, bml_variable(ctx, "x"), bml_number(ctx, 0)));
+  demo(ctx, "0 - x", bml_subtract(ctx, bml_number(ctx, 0), bml_variable(ctx, "x")));
+  demo(ctx, "5 - 3", bml_subtract(ctx, bml_number(ctx, 5), bml_number(ctx, 3)));
+  demo(ctx, "x - x", bml_subtract(ctx, bml_variable(ctx, "x"), bml_variable(ctx, "x")));
 
   /* negation */
-  demo(ctx, "-( -x )",
-       bml_negate(ctx, bml_negate(ctx, bml_variable(ctx, "x"))));
+  demo(ctx, "-( -x )", bml_negate(ctx, bml_negate(ctx, bml_variable(ctx, "x"))));
 
   /* multiplication */
-  demo(ctx, "x * 1",
-       bml_multiply(ctx, bml_variable(ctx, "x"), bml_number(ctx, 1)));
-  demo(ctx, "1 * x",
-       bml_multiply(ctx, bml_number(ctx, 1), bml_variable(ctx, "x")));
-  demo(ctx, "x * 0",
-       bml_multiply(ctx, bml_variable(ctx, "x"), bml_number(ctx, 0)));
-  demo(ctx, "4 * 7",
-       bml_multiply(ctx, bml_number(ctx, 4), bml_number(ctx, 7)));
+  demo(ctx, "x * 1", bml_multiply(ctx, bml_variable(ctx, "x"), bml_number(ctx, 1)));
+  demo(ctx, "1 * x", bml_multiply(ctx, bml_number(ctx, 1), bml_variable(ctx, "x")));
+  demo(ctx, "x * 0", bml_multiply(ctx, bml_variable(ctx, "x"), bml_number(ctx, 0)));
+  demo(ctx, "4 * 7", bml_multiply(ctx, bml_number(ctx, 4), bml_number(ctx, 7)));
 
   /* division */
-  demo(ctx, "x / 1",
-       bml_divide(ctx, bml_variable(ctx, "x"), bml_number(ctx, 1)));
-  demo(ctx, "0 / x",
-       bml_divide(ctx, bml_number(ctx, 0), bml_variable(ctx, "x")));
-  demo(ctx, "10 / 2",
-       bml_divide(ctx, bml_number(ctx, 10), bml_number(ctx, 2)));
+  demo(ctx, "x / 1", bml_divide(ctx, bml_variable(ctx, "x"), bml_number(ctx, 1)));
+  demo(ctx, "0 / x", bml_divide(ctx, bml_number(ctx, 0), bml_variable(ctx, "x")));
+  demo(ctx, "10 / 2", bml_divide(ctx, bml_number(ctx, 10), bml_number(ctx, 2)));
 
   /* power */
-  demo(ctx, "x ^ 0",
-       bml_power(ctx, bml_variable(ctx, "x"), bml_number(ctx, 0)));
-  demo(ctx, "x ^ 1",
-       bml_power(ctx, bml_variable(ctx, "x"), bml_number(ctx, 1)));
-  demo(ctx, "1 ^ x",
-       bml_power(ctx, bml_number(ctx, 1), bml_variable(ctx, "x")));
-  demo(ctx, "0 ^ x",
-       bml_power(ctx, bml_number(ctx, 0), bml_variable(ctx, "x")));
-  demo(ctx, "2 ^ 3",
-       bml_power(ctx, bml_number(ctx, 2), bml_number(ctx, 3)));
+  demo(ctx, "x ^ 0", bml_power(ctx, bml_variable(ctx, "x"), bml_number(ctx, 0)));
+  demo(ctx, "x ^ 1", bml_power(ctx, bml_variable(ctx, "x"), bml_number(ctx, 1)));
+  demo(ctx, "1 ^ x", bml_power(ctx, bml_number(ctx, 1), bml_variable(ctx, "x")));
+  demo(ctx, "0 ^ x", bml_power(ctx, bml_number(ctx, 0), bml_variable(ctx, "x")));
+  demo(ctx, "2 ^ 3", bml_power(ctx, bml_number(ctx, 2), bml_number(ctx, 3)));
 
   /* structural equality */
   printf("--- structural equality ---\n");

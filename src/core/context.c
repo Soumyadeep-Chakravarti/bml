@@ -9,6 +9,12 @@ BML_Context *bml_context_create(void) {
     return NULL;
 
   ctx->arena = bml_arena_create();
+  ctx->assumptions = NULL;
+  ctx->assumption_count = 0;
+  ctx->assumption_capacity = 0;
+  ctx->canonical_memo = NULL;
+  ctx->canonical_memo_count = 0;
+  ctx->canonical_memo_capacity = 0;
 
   if (!ctx->arena) {
     free(ctx);
@@ -23,6 +29,8 @@ void bml_context_destroy(BML_Context *ctx) {
     return;
 
   bml_arena_destroy(ctx->arena);
+  free(ctx->assumptions);
+  free(ctx->canonical_memo);
 
   free(ctx);
 }

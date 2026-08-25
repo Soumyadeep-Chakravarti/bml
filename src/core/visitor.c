@@ -1,7 +1,6 @@
-#include "bml/internal/visitor.h"
+#include "bml/visitor.h"
 
-static int visit_preorder(const BML_Expr *expr, BML_VisitFn fn,
-                          void *userdata) {
+static int visit_preorder(const BML_Expr *expr, BML_VisitFn fn, void *userdata) {
   if (!expr)
     return 0;
 
@@ -18,8 +17,7 @@ static int visit_preorder(const BML_Expr *expr, BML_VisitFn fn,
   return 0;
 }
 
-static int visit_postorder(const BML_Expr *expr, BML_VisitFn fn,
-                           void *userdata) {
+static int visit_postorder(const BML_Expr *expr, BML_VisitFn fn, void *userdata) {
   if (!expr)
     return 0;
 
@@ -32,13 +30,13 @@ static int visit_postorder(const BML_Expr *expr, BML_VisitFn fn,
   return fn(expr, userdata);
 }
 
-int bml_visit(const BML_Expr *expr, BML_VisitFn fn, BML_VisitOrder order,
+int bml_visit(const BML_Expr *root, BML_TraversalOrder order, BML_VisitFn fn,
               void *userdata) {
   switch (order) {
-  case BML_VISIT_POSTORDER:
-    return visit_postorder(expr, fn, userdata);
-  case BML_VISIT_PREORDER:
+  case BML_TRAVERSE_POST_ORDER:
+    return visit_postorder(root, fn, userdata);
+  case BML_TRAVERSE_PRE_ORDER:
   default:
-    return visit_preorder(expr, fn, userdata);
+    return visit_preorder(root, fn, userdata);
   }
 }

@@ -79,6 +79,7 @@ struct BML_Expr {
  * Destruction
  *==========================================================*/
 
+/* Expressions are owned by their BML_Context; this is a compatibility no-op. */
 void bml_expr_destroy(BML_Expr *expr);
 
 /*==========================================================

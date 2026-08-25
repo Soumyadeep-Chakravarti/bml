@@ -11,7 +11,12 @@ extern "C" {
 
 typedef struct BML_Context {
   BML_Arena *arena;
-
+  struct BML_SymbolAssumption *assumptions;
+  size_t assumption_count;
+  size_t assumption_capacity;
+  struct BML_ExprMemoEntry *canonical_memo;
+  size_t canonical_memo_count;
+  size_t canonical_memo_capacity;
 } BML_Context;
 
 BML_Context *bml_context_create(void);

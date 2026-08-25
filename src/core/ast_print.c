@@ -95,4 +95,6 @@ static void print_node(const BML_Expr *expr, size_t depth) {
   }
 }
 
-void bml_print_ast(const BML_Expr *expr) { print_node(expr, 0); }
+void bml_print_ast(const BML_Expr *expr) {
+  print_node(expr, 0);
+}

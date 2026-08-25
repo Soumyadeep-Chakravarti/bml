@@ -37,6 +37,9 @@ BML_Expr *bml_divide(BML_Context *ctx, BML_Expr *left, BML_Expr *right);
 
 BML_Expr *bml_power(BML_Context *ctx, BML_Expr *base, BML_Expr *exponent);
 
+/* The function name is borrowed; parsed names are owned by the context arena. */
+BML_Expr *bml_function(BML_Context *ctx, const char *name, BML_Expr *argument);
+
 #ifdef __cplusplus
 }
 #endif

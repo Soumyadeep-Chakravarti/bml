@@ -20,10 +20,7 @@ typedef int (*BML_VisitFn)(const BML_Expr *expr, void *userdata);
  * Traversal Order
  *==========================================================*/
 
-typedef enum {
-  BML_TRAVERSE_PRE_ORDER,
-  BML_TRAVERSE_POST_ORDER
-} BML_TraversalOrder;
+typedef enum { BML_TRAVERSE_PRE_ORDER, BML_TRAVERSE_POST_ORDER } BML_TraversalOrder;
 
 /*==========================================================
  * Generic AST Walker

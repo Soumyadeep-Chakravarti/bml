@@ -5,6 +5,9 @@
 #include <string.h>
 
 BML_Expr *bml_node(BML_Context *ctx, BML_NodeType type, size_t child_count) {
+  if (!ctx || !ctx->arena)
+    return NULL;
+
   BML_Expr *expr = bml_arena_alloc(ctx->arena, sizeof(BML_Expr));
 
   if (!expr)
@@ -14,14 +17,20 @@ BML_Expr *bml_node(BML_Context *ctx, BML_NodeType type, size_t child_count) {
   expr->child_count = child_count;
 
   if (child_count > 0) {
-    expr->children =
-        bml_arena_alloc(ctx->arena, sizeof(BML_Expr *) * child_count);
+    expr->children = bml_arena_alloc(ctx->arena, sizeof(BML_Expr *) * child_count);
   }
 
   return expr;
 }
 
+void bml_expr_destroy(BML_Expr *expr) {
+  (void)expr;
+}
+
 BML_Expr *bml_unary(BML_Context *ctx, BML_NodeType type, BML_Expr *child) {
+  if (!child)
+    return NULL;
+
   BML_Expr *expr = bml_node(ctx, type, 1);
 
   if (!expr)
@@ -34,6 +43,9 @@ BML_Expr *bml_unary(BML_Context *ctx, BML_NodeType type, BML_Expr *child) {
 
 BML_Expr *bml_binary(BML_Context *ctx, BML_NodeType type, BML_Expr *left,
                      BML_Expr *right) {
+  if (!left || !right)
+    return NULL;
+
   BML_Expr *expr = bml_node(ctx, type, 2);
 
   if (!expr)
@@ -65,6 +77,7 @@ int bml_expr_equal(const BML_Expr *a, const BML_Expr *b) {
 
   case BML_NODE_VARIABLE:
   case BML_NODE_CONSTANT:
+  case BML_NODE_FUNCTION:
     return strcmp(a->value.identifier, b->value.identifier) == 0;
 
   default:
