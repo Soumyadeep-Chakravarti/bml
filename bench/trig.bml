@@ -1,0 +1,2 @@
+# Trigonometric calls without identity rewriting
+sin(x + y) + cos(x + y)

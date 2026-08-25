@@ -1,0 +1,2 @@
+# Repeated non-leaf expression for CSE analysis
+(x + y)^2 + sin(x + y)

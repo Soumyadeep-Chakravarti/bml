@@ -1,0 +1,2 @@
+# Functions commonly produced by differentiation
+sin(x)^2 + cos(x)^2 + exp(x)
