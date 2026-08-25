@@ -15,8 +15,16 @@ typedef struct {
   double value;
 } BML_Binding;
 
+typedef struct {
+  size_t offset;
+  const char *message;
+} BML_ParseDiagnostic;
+
 /* Parses a scalar real expression. On failure, error is BML_ERROR_PARSE. */
 BML_Expr *bml_parse(BML_Context *ctx, const char *input, BML_Error *error);
+/* Like bml_parse, with a byte offset and a static diagnostic message on failure. */
+BML_Expr *bml_parse_with_diagnostic(BML_Context *ctx, const char *input,
+                                    BML_Error *error, BML_ParseDiagnostic *diagnostic);
 
 BML_Error bml_evaluate(const BML_Expr *expr, const BML_Binding *bindings,
                        size_t binding_count, double *result);

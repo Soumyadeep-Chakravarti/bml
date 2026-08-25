@@ -18,6 +18,7 @@ typedef struct {
   BML_Context *ctx;
   const char *cursor;
   BML_Error error;
+  const char *message;
 } Parser;
 
 static void skip_space(Parser *parser) {
@@ -44,6 +45,7 @@ static BML_Expr *parse_primary(Parser *parser) {
     skip_space(parser);
     if (*parser->cursor != ')') {
       parser->error = BML_ERROR_PARSE;
+      parser->message = "expected ')'";
       return NULL;
     }
     parser->cursor++;
@@ -54,6 +56,7 @@ static BML_Expr *parse_primary(Parser *parser) {
     double value = strtod(parser->cursor, &end);
     if (end == parser->cursor) {
       parser->error = BML_ERROR_PARSE;
+      parser->message = "invalid number";
       return NULL;
     }
     parser->cursor = end;
@@ -78,12 +81,14 @@ static BML_Expr *parse_primary(Parser *parser) {
         (strcmp(name, "sin") && strcmp(name, "cos") && strcmp(name, "exp") &&
          strcmp(name, "log"))) {
       parser->error = BML_ERROR_PARSE;
+      parser->message = "expected a supported one-argument function";
       return NULL;
     }
     parser->cursor++;
     return bml_function(parser->ctx, name, argument);
   }
   parser->error = BML_ERROR_PARSE;
+  parser->message = "expected a number, identifier, or '('";
   return NULL;
 }
 
@@ -142,18 +147,32 @@ static BML_Expr *parse_expression(Parser *parser) {
   return left;
 }
 
-BML_Expr *bml_parse(BML_Context *ctx, const char *input, BML_Error *error) {
-  Parser parser = {ctx, input, BML_SUCCESS};
+BML_Expr *bml_parse_with_diagnostic(BML_Context *ctx, const char *input,
+                                    BML_Error *error, BML_ParseDiagnostic *diagnostic) {
+  Parser parser = {ctx, input, BML_SUCCESS, NULL};
   if (!ctx || !input)
     parser.error = BML_ERROR_INVALID_ARGUMENT;
   BML_Expr *expr = parser.error == BML_SUCCESS ? parse_expression(&parser) : NULL;
   if (parser.error == BML_SUCCESS)
     skip_space(&parser);
-  if (!expr || (parser.error == BML_SUCCESS && *parser.cursor))
-    parser.error = parser.error == BML_SUCCESS ? BML_ERROR_PARSE : parser.error;
+  if (!expr || (parser.error == BML_SUCCESS && *parser.cursor)) {
+    if (parser.error == BML_SUCCESS) {
+      parser.error = BML_ERROR_PARSE;
+      parser.message = "unexpected trailing input";
+    }
+  }
   if (error)
     *error = parser.error;
+  if (diagnostic) {
+    diagnostic->offset = input ? (size_t)(parser.cursor - input) : 0;
+    diagnostic->message =
+        parser.message ? parser.message : bml_error_string(parser.error);
+  }
   return parser.error == BML_SUCCESS ? expr : NULL;
+}
+
+BML_Expr *bml_parse(BML_Context *ctx, const char *input, BML_Error *error) {
+  return bml_parse_with_diagnostic(ctx, input, error, NULL);
 }
 
 static BML_Error evaluate(const BML_Expr *expr, const BML_Binding *bindings,

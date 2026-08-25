@@ -22,6 +22,9 @@ static void test_parse_eval(BML_Context *ctx) {
   CHECK(bml_evaluate(expr, values, 2, &result) == BML_SUCCESS);
   CHECK(fabs(result - 11.0) < 1e-12);
   CHECK(!bml_parse(ctx, "sqrt(x)", &error) && error == BML_ERROR_PARSE);
+  BML_ParseDiagnostic diagnostic;
+  CHECK(!bml_parse_with_diagnostic(ctx, "x + )", &error, &diagnostic) &&
+        error == BML_ERROR_PARSE && diagnostic.offset == 4 && diagnostic.message);
   CHECK(!bml_parse(NULL, "x", &error) && error == BML_ERROR_INVALID_ARGUMENT);
   CHECK(bml_evaluate(expr, NULL, 1, &result) == BML_ERROR_INVALID_ARGUMENT);
 }
