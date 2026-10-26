@@ -1,5 +1,0 @@
-cmake_minimum_required(VERSION 3.20)
-project(BMLConsumer LANGUAGES C)
-find_package(BML CONFIG REQUIRED)
-add_executable(bml_consumer main.c)
-target_link_libraries(bml_consumer PRIVATE BML::bml)

@@ -1,43 +1,51 @@
 {
-  description = "Buna's Math Library (BML) - Experimental symbolic mathematics and optimization engine in C";
+  description = "BML development environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { nixpkgs, ... }:
     let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
-      forEachSupportedSystem = f:
-        nixpkgs.lib.genAttrs supportedSystems (system:
-          f {
-            pkgs = import nixpkgs { inherit system; };
-          });
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      forAllSystems = nixpkgs.lib.genAttrs systems;
     in
     {
-      devShells = forEachSupportedSystem ({ pkgs }: {
-        default = pkgs.mkShell {
-          packages = with pkgs; [
-            clang
-            cmake
-            ninja
-            pkg-config
-            gdb
-            valgrind
-            cppcheck
-            clang-tools
-          ];
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          default = pkgs.mkShell {
+            packages = with pkgs; [
+              clang
+              clang-tools
+              cmake
+              ninja
+              gnumake
+              pkg-config
+              just
 
-          CC = "clang";
-          CXX = "clang++";
-          CMAKE_GENERATOR = "Ninja";
-          CMAKE_EXPORT_COMPILE_COMMANDS = "ON";
+              nixfmt
+              statix
+              deadnix
+            ];
 
-          shellHook = ''
-            echo "BML development environment: clang + ninja"
-            echo "Configure with: cmake --preset dev"
-          '';
-        };
-      });
+            shellHook = ''
+              echo "BML development environment"
+              echo "  $(clang --version | head -n 1)"
+              echo "  CMake $(cmake --version | head -n 1 | cut -d ' ' -f 3)"
+            '';
+          };
+        }
+      );
+
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
     };
 }

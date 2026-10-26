@@ -1,9 +1,0 @@
-#ifndef BML_VERSION_H
-#define BML_VERSION_H
-
-#define BML_VERSION_MAJOR 0
-#define BML_VERSION_MINOR 5
-#define BML_VERSION_PATCH 0
-#define BML_VERSION_STRING "0.5.0"
-
-#endif
